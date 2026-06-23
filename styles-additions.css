@@ -1,0 +1,82 @@
+/* Learning Quests: gate nodes inside progress map + tintable Iconify icons. Append to styles.css. */
+.lq-iconify-mask {
+  display: inline-block;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  -webkit-mask-image: var(--lq-icon-url);
+  mask-image: var(--lq-icon-url);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.lq-node.is-completed,
+.lq-gate-node.is-completed {
+  color: var(--color-green, #3fb950);
+}
+
+.lq-node.is-available,
+.lq-gate-node.is-available {
+  color: var(--interactive-accent);
+}
+
+.lq-node.is-locked,
+.lq-gate-node.is-locked {
+  color: var(--text-normal);
+}
+
+.theme-dark .lq-node.is-locked,
+.theme-dark .lq-gate-node.is-locked {
+  color: #ffffff;
+}
+
+.theme-light .lq-node.is-locked,
+.theme-light .lq-gate-node.is-locked {
+  color: #000000;
+}
+
+.lq-node-icon,
+.lq-gate-icon {
+  margin-bottom: 8px;
+}
+
+.lq-gate-node.is-progress-gate {
+  cursor: pointer;
+}
+
+.lq-gate-meta {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.lq-note-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.lq-note-picker input {
+  min-width: 260px;
+}
+
+.lq-note-picker select {
+  max-width: 320px;
+}
+
+.lq-note-suggest-title {
+  font-weight: 600;
+}
+
+.lq-note-suggest-path {
+  color: var(--text-muted);
+  font-size: 0.85em;
+}

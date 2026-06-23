@@ -1,4 +1,4 @@
-import { App, ItemView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from "obsidian";
+import { App, ItemView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting, SuggestModal, TFile, WorkspaceLeaf } from "obsidian";
 import { DEMO_PACKS } from "./src/demo-pack";
 import {
   LearningQuestsSettings,
@@ -8,8 +8,8 @@ import {
   QuestTask,
   SingleChoiceTask
 } from "./src/models";
-import { isQuestUnlocked, isTaskCompleted, isTaskSkipped, updateStreak } from "./src/quest-engine";
 import { normalizeQuestPacks } from "./src/quest-loader";
+import { isQuestUnlocked, isTaskCompleted, isTaskSkipped, updateStreak } from "./src/quest-engine";
 
 const VIEW_TYPE_LEARNING_QUESTS = "learning-quests-view";
 const QUEST_FOLDER = "Learning Quests/quests";
@@ -404,6 +404,8 @@ class LearningQuestsView extends ItemView {
   private activePackId?: string;
   private activeChapterByPack: Record<string, string> = {};
   private viewportStates: Record<string, CanvasViewportState> = {};
+  private iconSvgCache: Record<string, string | null> = {};
+  private pendingFrameByViewport: Record<string, number | null> = {};
 
   constructor(leaf: WorkspaceLeaf, private plugin: LearningQuestsPlugin) {
     super(leaf);
@@ -537,7 +539,7 @@ class LearningQuestsView extends ItemView {
     const nodeWidth = 176;
     const nodeHeight = 148;
     const gateWidth = 240;
-    const gateHeight = 128;
+    const gateHeight = 168;
     const gapX = 244;
     const gapY = 204;
 
@@ -598,16 +600,19 @@ class LearningQuestsView extends ItemView {
 
       for (const requiredId of quest.requires ?? []) {
         const from = positions.get(requiredId);
-        if (!from) {
+        const fromQuest = quests.find((candidate) => candidate.id === requiredId);
+        if (!from || !fromQuest) {
           continue;
         }
 
+        const fromMetrics = this.getQuestNodeMetrics(fromQuest, nodeWidth, nodeHeight, gateWidth, gateHeight);
+        const toMetrics = this.getQuestNodeMetrics(quest, nodeWidth, nodeHeight, gateWidth, gateHeight);
         const line = svg.createSvg("line", { cls: "lq-link" });
         line.addClass(linkState);
-        line.setAttr("x1", String(from.x + worldOffset.x + nodeWidth));
-        line.setAttr("y1", String(from.y + worldOffset.y + nodeHeight / 2));
+        line.setAttr("x1", String(from.x + worldOffset.x + fromMetrics.width));
+        line.setAttr("y1", String(from.y + worldOffset.y + fromMetrics.height / 2));
         line.setAttr("x2", String(to.x + worldOffset.x));
-        line.setAttr("y2", String(to.y + worldOffset.y + nodeHeight / 2));
+        line.setAttr("y2", String(to.y + worldOffset.y + toMetrics.height / 2));
         line.setAttr("marker-end", `url(#lq-arrow-${linkState.replace("is-", "")})`);
       }
     }
@@ -647,16 +652,31 @@ class LearningQuestsView extends ItemView {
       line.addClass("is-gate");
       line.setAttr("x1", String(gatePosition.x + worldOffset.x + gateWidth));
       line.setAttr("y1", String(gatePosition.y + worldOffset.y + gateHeight / 2));
+      const targetMetrics = this.getQuestNodeMetrics(quest, 176, nodeHeight, gateWidth, gateHeight);
       line.setAttr("x2", String(position.x + worldOffset.x));
-      line.setAttr("y2", String(position.y + worldOffset.y + nodeHeight / 2));
+      line.setAttr("y2", String(position.y + worldOffset.y + targetMetrics.height / 2));
       line.setAttr("marker-end", "url(#lq-arrow-gate)");
     }
   }
 
+
+  private getQuestNodeMetrics(
+    quest: Quest,
+    nodeWidth: number,
+    nodeHeight: number,
+    gateWidth: number,
+    gateHeight: number
+  ): { width: number; height: number } {
+    return isGateQuest(quest)
+      ? { width: gateWidth, height: gateHeight }
+      : { width: nodeWidth, height: nodeHeight };
+  }
+
   private renderGateNode(parent: HTMLElement, title: string, position: { x: number; y: number }) {
-    const gate = parent.createDiv({ cls: "lq-gate-node" });
+    const gate = parent.createDiv({ cls: "lq-gate-node is-virtual-gate" });
     gate.style.left = `${position.x}px`;
     gate.style.top = `${position.y}px`;
+    this.renderIcon(gate, "mdi:map-marker-path", "lq-gate-icon");
     gate.createDiv({ cls: "lq-gate-label", text: "Gate" });
     gate.createDiv({ cls: "lq-gate-title", text: title });
   }
@@ -710,7 +730,7 @@ class LearningQuestsView extends ItemView {
       state.y = pointerY - worldY * nextScale;
       state.scale = nextScale;
 
-      this.applyViewportState(viewportKey, canvas, viewport);
+      this.scheduleViewportTransform(viewportKey, canvas, viewport);
     };
 
     viewport.onpointerdown = (event) => {
@@ -736,7 +756,7 @@ class LearningQuestsView extends ItemView {
       lastX = event.clientX;
       lastY = event.clientY;
 
-      this.applyViewportState(viewportKey, canvas, viewport);
+      this.scheduleViewportTransform(viewportKey, canvas, viewport);
     };
 
     viewport.onpointerup = (event) => {
@@ -751,6 +771,17 @@ class LearningQuestsView extends ItemView {
     };
   }
 
+  private scheduleViewportTransform(viewportKey: string, canvas: HTMLElement, viewport?: HTMLElement) {
+    if (this.pendingFrameByViewport[viewportKey] !== null && this.pendingFrameByViewport[viewportKey] !== undefined) {
+      return;
+    }
+
+    this.pendingFrameByViewport[viewportKey] = requestAnimationFrame(() => {
+      this.pendingFrameByViewport[viewportKey] = null;
+      this.applyViewportState(viewportKey, canvas, viewport);
+    });
+  }
+
   private applyViewportState(viewportKey: string, canvas: HTMLElement, viewport?: HTMLElement) {
     const state = this.getViewportState(viewportKey);
     if (!state.initialized && viewport) {
@@ -759,7 +790,7 @@ class LearningQuestsView extends ItemView {
       state.initialized = true;
     }
 
-    canvas.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+    canvas.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) scale(${state.scale})`;
   }
 
   private getViewportState(viewportKey: string): CanvasViewportState {
@@ -789,14 +820,16 @@ class LearningQuestsView extends ItemView {
     const completedTasks = progress.completedTasks[quest.id] ?? [];
     const skippedTasks = progress.skippedTasks[quest.id] ?? [];
     const possibleXp = quest.tasks.reduce((sum, task) => sum + this.plugin.getTaskXp(quest, task), 0);
+    const gate = isGateQuest(quest);
 
     const node = parent.createEl("button", {
       cls: [
-        "lq-node",
+        gate ? "lq-gate-node" : "lq-node",
+        gate ? "is-progress-gate" : "",
         completed ? "is-completed" : "",
         !completed && unlocked ? "is-available" : "",
         unlocked ? "is-unlocked" : "is-locked"
-      ].join(" ")
+      ].filter(Boolean).join(" ")
     });
     node.style.left = `${position.x}px`;
     node.style.top = `${position.y}px`;
@@ -805,14 +838,17 @@ class LearningQuestsView extends ItemView {
     node.onclick = () => new QuestDetailsModal(this.plugin, quest, allQuests).open();
 
     if (quest.icon) {
-      const icon = node.createEl("img", {
-        cls: "lq-node-icon",
-        attr: {
-          src: getIconifySvgUrl(quest.icon),
-          alt: ""
-        }
-      });
-      icon.draggable = false;
+      this.renderIcon(node, quest.icon, gate ? "lq-gate-icon" : "lq-node-icon");
+    }
+
+    if (gate) {
+      node.createDiv({ cls: "lq-gate-label", text: "Gate" });
+      node.createDiv({ cls: "lq-gate-title", text: quest.title });
+      const meta = node.createDiv({ cls: "lq-gate-meta" });
+      meta.createSpan({ cls: "lq-node-badge", text: `${completedTasks.length + skippedTasks.length}/${quest.tasks.length}` });
+      const xpBadge = meta.createSpan({ cls: "lq-node-badge", text: `${possibleXp} XP` });
+      xpBadge.addClass("lq-node-xp");
+      return;
     }
 
     node.createSpan({ cls: "lq-node-title", text: quest.title });
@@ -821,11 +857,77 @@ class LearningQuestsView extends ItemView {
       cls: "lq-node-badge",
       text: `${completedTasks.length + skippedTasks.length}/${quest.tasks.length}`
     });
-    meta.createSpan({
-      cls: "lq-node-badge lq-node-xp",
+    const xpBadge = meta.createSpan({
+      cls: "lq-node-badge",
       text: `${possibleXp} XP`
     });
+    xpBadge.addClass("lq-node-xp");
   }
+
+  private renderIcon(parent: HTMLElement, iconName: string, className: string) {
+    const icon = parent.createSpan({ cls: className });
+    icon.addClass("lq-iconify-inline");
+    icon.setAttr("aria-hidden", "true");
+
+    void this.loadIconSvg(iconName).then((svg) => {
+      if (!icon.isConnected) {
+        return;
+      }
+
+      if (!svg) {
+        icon.remove();
+        return;
+      }
+
+      icon.empty();
+      icon.appendChild(svg);
+    });
+  }
+
+  private async loadIconSvg(iconName: string): Promise<SVGSVGElement | null> {
+    const url = getIconifySvgUrl(iconName);
+    if (!url) {
+      return null;
+    }
+
+    if (!(iconName in this.iconSvgCache)) {
+      try {
+        const response = await requestUrl({ url, method: "GET" });
+        const text = response.text;
+
+        if (response.status < 200 || response.status >= 300 || !text.includes("<svg")) {
+          this.iconSvgCache[iconName] = null;
+        } else {
+          this.iconSvgCache[iconName] = text;
+        }
+      } catch (error) {
+        console.warn(`Learning Quests: failed to load icon ${iconName}`, error);
+        this.iconSvgCache[iconName] = null;
+      }
+    }
+
+    const rawSvg = this.iconSvgCache[iconName];
+    if (!rawSvg) {
+      return null;
+    }
+
+    const documentSvg = new DOMParser().parseFromString(rawSvg, "image/svg+xml");
+    const svg = documentSvg.documentElement;
+    if (svg.tagName.toLowerCase() !== "svg") {
+      return null;
+    }
+
+    svg.querySelectorAll("script, style").forEach((element) => element.remove());
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+
+    return svg as unknown as SVGSVGElement;
+  }
+
 }
 
 class QuestDetailsModal extends Modal {
@@ -964,8 +1066,8 @@ class QuestDetailsModal extends Modal {
         .then(() => this.renderContent());
     };
 
-    const select = wrapper.createEl("select");
     const selectedPath = this.plugin.getSelectedNotePath(this.quest.id, task);
+    const select = wrapper.createEl("select");
     const paths = unique([selectedPath, task.path, ...this.plugin.getTrackedNotePaths()]).filter(Boolean);
 
     for (const path of paths) {
@@ -980,6 +1082,15 @@ class QuestDetailsModal extends Modal {
     select.onchange = () => {
       void this.plugin.setSelectedNotePath(this.quest.id, task.id, select.value).then(() => this.renderContent());
     };
+
+    const searchButton = wrapper.createEl("button", { text: "Search" });
+    searchButton.disabled = !enabled;
+    searchButton.onclick = () => {
+      new NotePickerSuggestModal(this.plugin, selectedPath, async (path) => {
+        await this.plugin.setSelectedNotePath(this.quest.id, task.id, path);
+        this.renderContent();
+      }).open();
+    };
   }
 
   private renderSkipButton(parent: HTMLElement, task: QuestTask, canInteract: boolean, done: boolean, skipped: boolean) {
@@ -988,6 +1099,51 @@ class QuestDetailsModal extends Modal {
     skipButton.onclick = () => {
       void this.plugin.skipTask(this.quest, task).then(() => this.renderContent());
     };
+  }
+}
+
+class NotePickerSuggestModal extends SuggestModal<TFile> {
+  constructor(
+    private plugin: LearningQuestsPlugin,
+    private selectedPath: string,
+    private onChoosePath: (path: string) => void | Promise<void>
+  ) {
+    super(plugin.app);
+    this.setPlaceholder("Search notes in tracked folders...");
+  }
+
+  getSuggestions(query: string): TFile[] {
+    const trackedPaths = new Set(this.plugin.getTrackedNotePaths());
+    const normalizedQuery = query.trim().toLowerCase();
+    return this.plugin.app.vault
+      .getMarkdownFiles()
+      .filter((file) => trackedPaths.has(file.path))
+      .filter((file) => {
+        if (!normalizedQuery) {
+          return true;
+        }
+
+        return file.path.toLowerCase().includes(normalizedQuery) || file.basename.toLowerCase().includes(normalizedQuery);
+      })
+      .sort((a, b) => {
+        if (a.path === this.selectedPath) {
+          return -1;
+        }
+        if (b.path === this.selectedPath) {
+          return 1;
+        }
+        return a.path.localeCompare(b.path);
+      })
+      .slice(0, 50);
+  }
+
+  renderSuggestion(file: TFile, el: HTMLElement) {
+    el.createDiv({ cls: "lq-note-suggest-title", text: file.basename });
+    el.createDiv({ cls: "lq-note-suggest-path", text: file.path });
+  }
+
+  onChooseSuggestion(file: TFile) {
+    void this.onChoosePath(file.path);
   }
 }
 
@@ -1061,6 +1217,11 @@ class LearningQuestsSettingTab extends PluginSettingTab {
         text.inputEl.addClass("lq-settings-textarea");
       });
   }
+}
+
+function isGateQuest(quest: Quest): boolean {
+  const typedQuest = quest as Quest & { kind?: string; type?: string };
+  return typedQuest.kind === "gate" || typedQuest.type === "gate";
 }
 
 function unique<T>(values: T[]): T[] {

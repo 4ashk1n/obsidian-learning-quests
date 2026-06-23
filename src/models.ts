@@ -1,67 +1,8 @@
-export type LearningQuestsSettings = {
-  trackedFolders: string[];
-  progress: ProgressState;
-};
+export type QuestTask = MarkdownTask | SingleChoiceTask | NoteExistsTask | NoteContainsTask;
 
-export type ProgressState = {
+export type TaskReward = {
   xp: number;
-  completedQuests: string[];
-  completedTasks: CompletedTasks;
-  skippedTasks: CompletedTasks;
-  rewardedTasks: CompletedTasks;
-  streak: StreakState;
-  answers: Record<string, string>;
-  selectedNotes: Record<string, string>;
 };
-
-export type CompletedTasks = Record<string, string[]>;
-
-export type StreakState = {
-  current: number;
-  best: number;
-  lastCompletionDate?: string;
-};
-
-export type QuestPack = {
-  schemaVersion: 1;
-  packId: string;
-  title: string;
-  chapters: Chapter[];
-};
-
-export type Chapter = {
-  id: string;
-  title: string;
-  quests: QuestDefinition[];
-};
-
-export type QuestDefinition = {
-  id: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  position?: {
-    x: number;
-    y: number;
-  };
-  requires?: string[];
-  tasks: QuestTask[];
-  rewards?: {
-    xp: number;
-  };
-};
-
-export type Quest = QuestDefinition & {
-  chapterId?: string;
-  chapterTitle?: string;
-  packId?: string;
-};
-
-export type QuestTask =
-  | MarkdownTask
-  | SingleChoiceTask
-  | NoteExistsTask
-  | NoteContainsTask;
 
 export type MarkdownTask = {
   id: string;
@@ -74,10 +15,10 @@ export type SingleChoiceTask = {
   id: string;
   type: "single-choice";
   prompt: string;
-  options: {
+  options: Array<{
     id: string;
     text: string;
-  }[];
+  }>;
   answer: string;
   reward?: TaskReward;
 };
@@ -99,6 +40,59 @@ export type NoteContainsTask = {
   reward?: TaskReward;
 };
 
-export type TaskReward = {
+export type QuestNodeKind = "quest" | "gate";
+
+export type Quest = {
+  id: string;
+  title: string;
+  description?: string;
+  kind?: QuestNodeKind;
+  icon?: string;
+  position?: {
+    x: number;
+    y: number;
+  };
+  requires?: string[];
+  tasks: QuestTask[];
+  rewards?: {
+    xp: number;
+  };
+  chapterId?: string;
+  chapterTitle?: string;
+  packId?: string;
+};
+
+export type QuestChapter = {
+  id: string;
+  title: string;
+  quests: Quest[];
+};
+
+export type QuestPack = {
+  schemaVersion: 1;
+  packId: string;
+  title: string;
+  chapters: QuestChapter[];
+};
+
+export type StreakState = {
+  current: number;
+  best: number;
+  lastCompletedDate?: string;
+};
+
+export type ProgressState = {
   xp: number;
+  completedQuests: string[];
+  completedTasks: Record<string, string[]>;
+  skippedTasks: Record<string, string[]>;
+  rewardedTasks: Record<string, string[]>;
+  streak: StreakState;
+  answers: Record<string, string>;
+  selectedNotes: Record<string, string>;
+};
+
+export type LearningQuestsSettings = {
+  trackedFolders: string[];
+  progress: ProgressState;
 };

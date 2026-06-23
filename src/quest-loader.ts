@@ -1,55 +1,61 @@
-import { QuestPack, QuestTask } from "./models";
+import { QuestPack } from "./models";
 
-export function normalizeQuestPacks(input: unknown, source: string): QuestPack[] {
-  const candidates = Array.isArray(input) ? input : [input];
-  return candidates.map((candidate) => normalizeQuestPack(candidate, source));
+export function normalizeQuestPacks(raw: unknown, sourcePath = "unknown"): QuestPack[] {
+  const candidates = Array.isArray(raw) ? raw : [raw];
+  return candidates.map((candidate, index) => normalizeQuestPack(candidate, `${sourcePath}#${index}`));
 }
 
-function normalizeQuestPack(input: unknown, source: string): QuestPack {
-  if (!isRecord(input)) {
-    throw new Error(`${source}: quest pack must be an object`);
+function normalizeQuestPack(raw: unknown, sourceId: string): QuestPack {
+  if (!isRecord(raw)) {
+    throw new Error(`Quest pack must be an object: ${sourceId}`);
   }
 
-  if (input.schemaVersion !== 1) {
-    throw new Error(`${source}: only schemaVersion 1 is supported`);
-  }
+  const packId = readString(raw.packId, "quest-pack");
+  const title = readString(raw.title, packId);
+  const chaptersRaw = Array.isArray(raw.chapters) ? raw.chapters : [];
 
-  const packId = requireString(input.packId, `${source}: packId`);
-  const title = requireString(input.title, `${source}: title`);
-  const chaptersInput = requireArray(input.chapters, `${source}: chapters`);
+  if (chaptersRaw.length === 0) {
+    throw new Error(`Quest pack has no chapters: ${sourceId}`);
+  }
 
   return {
     schemaVersion: 1,
     packId,
     title,
-    chapters: chaptersInput.map((chapterInput, chapterIndex) => {
-      if (!isRecord(chapterInput)) {
-        throw new Error(`${source}: chapter ${chapterIndex} must be an object`);
+    chapters: chaptersRaw.map((chapterRaw, chapterIndex) => {
+      if (!isRecord(chapterRaw)) {
+        throw new Error(`Chapter must be an object: ${sourceId}:${chapterIndex}`);
       }
 
-      const chapterId = requireString(chapterInput.id, `${source}: chapter id`);
-      const chapterTitle = requireString(chapterInput.title, `${source}: chapter title`);
-      const questsInput = requireArray(chapterInput.quests, `${source}: chapter quests`);
+      const id = readString(chapterRaw.id, `chapter-${chapterIndex + 1}`);
+      const questsRaw = Array.isArray(chapterRaw.quests) ? chapterRaw.quests : [];
 
       return {
-        id: chapterId,
-        title: chapterTitle,
-        quests: questsInput.map((questInput, questIndex) => {
-          if (!isRecord(questInput)) {
-            throw new Error(`${source}: quest ${questIndex} must be an object`);
+        id,
+        title: readString(chapterRaw.title, id),
+        quests: questsRaw.map((questRaw, questIndex) => {
+          if (!isRecord(questRaw)) {
+            throw new Error(`Quest must be an object: ${sourceId}:${id}:${questIndex}`);
           }
 
+          const questId = readString(questRaw.id, `quest-${questIndex + 1}`);
+          const position = isRecord(questRaw.position)
+            ? {
+                x: readNumber(questRaw.position.x, questIndex * 240),
+                y: readNumber(questRaw.position.y, 0)
+              }
+            : undefined;
+
           return {
-            id: requireString(questInput.id, `${source}: quest id`),
-            title: requireString(questInput.title, `${source}: quest title`),
-            description: optionalString(questInput.description),
-            icon: optionalString(questInput.icon),
-            position: normalizePosition(questInput.position),
-            requires: optionalStringArray(questInput.requires),
-            tasks: requireArray(questInput.tasks, `${source}: tasks`).map((taskInput) =>
-              normalizeTask(taskInput, source)
-            ),
-            rewards: normalizeRewards(questInput.rewards)
+            id: questId,
+            title: readString(questRaw.title, questId),
+            description: typeof questRaw.description === "string" ? questRaw.description : undefined,
+            kind: questRaw.kind === "gate" ? "gate" : "quest",
+            icon: typeof questRaw.icon === "string" ? questRaw.icon : undefined,
+            position,
+            requires: Array.isArray(questRaw.requires) ? questRaw.requires.filter((value): value is string => typeof value === "string") : [],
+            tasks: Array.isArray(questRaw.tasks) ? questRaw.tasks as any : [],
+            rewards: isRecord(questRaw.rewards) ? { xp: readNumber(questRaw.rewards.xp, 0) } : { xp: 0 }
           };
         })
       };
@@ -57,130 +63,14 @@ function normalizeQuestPack(input: unknown, source: string): QuestPack {
   };
 }
 
-function normalizeTask(input: unknown, source: string): QuestTask {
-  if (!isRecord(input)) {
-    throw new Error(`${source}: task must be an object`);
-  }
-
-  const id = requireString(input.id, `${source}: task id`);
-  const type = requireString(input.type, `${source}: task type`);
-
-  if (type === "markdown") {
-    return {
-      id,
-      type,
-      content: requireString(input.content, `${source}: markdown content`),
-      reward: normalizeTaskReward(input.reward)
-    };
-  }
-
-  if (type === "single-choice") {
-    return {
-      id,
-      type,
-      prompt: requireString(input.prompt, `${source}: prompt`),
-      options: requireArray(input.options, `${source}: options`).map((option) => {
-        if (!isRecord(option)) {
-          throw new Error(`${source}: option must be an object`);
-        }
-
-        return {
-          id: requireString(option.id, `${source}: option id`),
-          text: requireString(option.text, `${source}: option text`)
-        };
-      }),
-      answer: requireString(input.answer, `${source}: answer`),
-      reward: normalizeTaskReward(input.reward)
-    };
-  }
-
-  if (type === "note-exists") {
-    return {
-      id,
-      type,
-      prompt: requireString(input.prompt, `${source}: prompt`),
-      path: requireString(input.path, `${source}: path`),
-      reward: normalizeTaskReward(input.reward)
-    };
-  }
-
-  if (type === "note-contains") {
-    return {
-      id,
-      type,
-      prompt: requireString(input.prompt, `${source}: prompt`),
-      path: requireString(input.path, `${source}: path`),
-      contains: optionalStringArray(input.contains),
-      reward: normalizeTaskReward(input.reward)
-    };
-  }
-
-  throw new Error(`${source}: unsupported task type ${type}`);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function normalizeRewards(input: unknown): { xp: number } {
-  if (!isRecord(input)) {
-    return { xp: 0 };
-  }
-
-  return {
-    xp: typeof input.xp === "number" ? input.xp : 0
-  };
+function readString(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
 }
 
-function normalizeTaskReward(input: unknown): { xp: number } | undefined {
-  if (!isRecord(input)) {
-    return undefined;
-  }
-
-  return {
-    xp: typeof input.xp === "number" ? input.xp : 0
-  };
-}
-
-function normalizePosition(input: unknown): { x: number; y: number } | undefined {
-  if (!isRecord(input)) {
-    return undefined;
-  }
-
-  if (typeof input.x !== "number" || typeof input.y !== "number") {
-    return undefined;
-  }
-
-  return {
-    x: input.x,
-    y: input.y
-  };
-}
-
-function isRecord(input: unknown): input is Record<string, unknown> {
-  return typeof input === "object" && input !== null && !Array.isArray(input);
-}
-
-function requireString(input: unknown, field: string): string {
-  if (typeof input !== "string" || input.length === 0) {
-    throw new Error(`${field} must be a non-empty string`);
-  }
-
-  return input;
-}
-
-function optionalString(input: unknown): string | undefined {
-  return typeof input === "string" ? input : undefined;
-}
-
-function requireArray(input: unknown, field: string): unknown[] {
-  if (!Array.isArray(input)) {
-    throw new Error(`${field} must be an array`);
-  }
-
-  return input;
-}
-
-function optionalStringArray(input: unknown): string[] {
-  if (!Array.isArray(input)) {
-    return [];
-  }
-
-  return input.filter((item): item is string => typeof item === "string");
+function readNumber(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
