@@ -14,6 +14,13 @@ import { isQuestUnlocked, isTaskCompleted, isTaskSkipped, updateStreak } from ".
 const VIEW_TYPE_LEARNING_QUESTS = "learning-quests-view";
 const QUEST_FOLDER = "Learning Quests/quests";
 
+const NODE_WIDTH = 176;
+const NODE_HEIGHT = 148;
+const GATE_WIDTH = 240;
+const GATE_MIN_HEIGHT = 168;
+const NODE_ICON_SIZE = 56;
+const GATE_ICON_SIZE = 64;
+
 const DEFAULT_SETTINGS: LearningQuestsSettings = {
   trackedFolders: ["Learning Quests"],
   progress: {
@@ -536,10 +543,10 @@ class LearningQuestsView extends ItemView {
 
   private renderQuestCanvas(parent: HTMLElement, viewportKey: string, chapterTitle: string, quests: Quest[], allQuests: Quest[]) {
     const positions = new Map<string, { x: number; y: number }>();
-    const nodeWidth = 176;
-    const nodeHeight = 148;
-    const gateWidth = 240;
-    const gateHeight = 168;
+    const nodeWidth = NODE_WIDTH;
+    const nodeHeight = NODE_HEIGHT;
+    const gateWidth = GATE_WIDTH;
+    const gateHeight = this.getGateNodeHeight(chapterTitle);
     const gapX = 244;
     const gapY = 204;
 
@@ -652,7 +659,7 @@ class LearningQuestsView extends ItemView {
       line.addClass("is-gate");
       line.setAttr("x1", String(gatePosition.x + worldOffset.x + gateWidth));
       line.setAttr("y1", String(gatePosition.y + worldOffset.y + gateHeight / 2));
-      const targetMetrics = this.getQuestNodeMetrics(quest, 176, nodeHeight, gateWidth, gateHeight);
+      const targetMetrics = this.getQuestNodeMetrics(quest, NODE_WIDTH, nodeHeight, gateWidth, gateHeight);
       line.setAttr("x2", String(position.x + worldOffset.x));
       line.setAttr("y2", String(position.y + worldOffset.y + targetMetrics.height / 2));
       line.setAttr("marker-end", "url(#lq-arrow-gate)");
@@ -668,17 +675,50 @@ class LearningQuestsView extends ItemView {
     gateHeight: number
   ): { width: number; height: number } {
     return isGateQuest(quest)
-      ? { width: gateWidth, height: gateHeight }
+      ? { width: gateWidth, height: this.getGateNodeHeight(quest.title) }
       : { width: nodeWidth, height: nodeHeight };
+  }
+
+  private getGateNodeHeight(title: string): number {
+    const extraLines = Math.max(0, Math.ceil(title.length / 22) - 1);
+    return GATE_MIN_HEIGHT + extraLines * 22;
+  }
+
+  private applyGateLayout(gate: HTMLElement, title?: string) {
+    gate.style.width = `${GATE_WIDTH}px`;
+    gate.style.minHeight = `${this.getGateNodeHeight(title ?? "") || GATE_MIN_HEIGHT}px`;
+    gate.style.height = "auto";
+    gate.style.boxSizing = "border-box";
+    gate.style.padding = "14px 16px";
+    gate.style.display = "flex";
+    gate.style.flexDirection = "column";
+    gate.style.alignItems = "center";
+    gate.style.justifyContent = "center";
+    gate.style.gap = "4px";
+    gate.style.overflow = "visible";
+    gate.style.whiteSpace = "normal";
+  }
+
+  private styleGateTitle(titleEl: HTMLElement) {
+    titleEl.style.maxWidth = "100%";
+    titleEl.style.whiteSpace = "normal";
+    titleEl.style.overflow = "visible";
+    titleEl.style.textOverflow = "unset";
+    titleEl.style.overflowWrap = "anywhere";
+    titleEl.style.wordBreak = "normal";
+    titleEl.style.lineHeight = "1.18";
+    titleEl.style.textAlign = "center";
   }
 
   private renderGateNode(parent: HTMLElement, title: string, position: { x: number; y: number }) {
     const gate = parent.createDiv({ cls: "lq-gate-node is-virtual-gate" });
     gate.style.left = `${position.x}px`;
     gate.style.top = `${position.y}px`;
+    this.applyGateLayout(gate, title);
     this.renderIcon(gate, "mdi:map-marker-path", "lq-gate-icon");
     gate.createDiv({ cls: "lq-gate-label", text: "Gate" });
-    gate.createDiv({ cls: "lq-gate-title", text: title });
+    const titleEl = gate.createDiv({ cls: "lq-gate-title", text: title });
+    this.styleGateTitle(titleEl);
   }
 
   private renderArrowMarkers(svg: SVGElement) {
@@ -833,6 +873,9 @@ class LearningQuestsView extends ItemView {
     });
     node.style.left = `${position.x}px`;
     node.style.top = `${position.y}px`;
+    if (gate) {
+      this.applyGateLayout(node, quest.title);
+    }
     node.disabled = false;
     node.onpointerdown = (event) => event.stopPropagation();
     node.onclick = () => new QuestDetailsModal(this.plugin, quest, allQuests).open();
@@ -843,7 +886,8 @@ class LearningQuestsView extends ItemView {
 
     if (gate) {
       node.createDiv({ cls: "lq-gate-label", text: "Gate" });
-      node.createDiv({ cls: "lq-gate-title", text: quest.title });
+      const titleEl = node.createDiv({ cls: "lq-gate-title", text: quest.title });
+      this.styleGateTitle(titleEl);
       const meta = node.createDiv({ cls: "lq-gate-meta" });
       meta.createSpan({ cls: "lq-node-badge", text: `${completedTasks.length + skippedTasks.length}/${quest.tasks.length}` });
       const xpBadge = meta.createSpan({ cls: "lq-node-badge", text: `${possibleXp} XP` });
@@ -869,6 +913,20 @@ class LearningQuestsView extends ItemView {
     icon.addClass("lq-iconify-inline");
     icon.setAttr("aria-hidden", "true");
 
+    const iconSize = className === "lq-gate-icon" ? GATE_ICON_SIZE : NODE_ICON_SIZE;
+    icon.style.width = `${iconSize}px`;
+    icon.style.height = `${iconSize}px`;
+    icon.style.maxWidth = `${iconSize}px`;
+    icon.style.maxHeight = `${iconSize}px`;
+    icon.style.minWidth = `${iconSize}px`;
+    icon.style.minHeight = `${iconSize}px`;
+    icon.style.display = "inline-flex";
+    icon.style.flex = `0 0 ${iconSize}px`;
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
+    icon.style.lineHeight = "1";
+    icon.style.marginBottom = className === "lq-gate-icon" ? "6px" : "8px";
+
     void this.loadIconSvg(iconName).then((svg) => {
       if (!icon.isConnected) {
         return;
@@ -879,6 +937,11 @@ class LearningQuestsView extends ItemView {
         return;
       }
 
+      svg.style.display = "block";
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+      svg.style.maxWidth = "100%";
+      svg.style.maxHeight = "100%";
       icon.empty();
       icon.appendChild(svg);
     });

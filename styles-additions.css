@@ -1,82 +1,128 @@
-/* Learning Quests: gate nodes inside progress map + tintable Iconify icons. Append to styles.css. */
-.lq-iconify-mask {
-  display: inline-block;
-  width: 56px;
-  height: 56px;
-  flex: 0 0 auto;
-  background-color: currentColor;
-  -webkit-mask-image: var(--lq-icon-url);
-  mask-image: var(--lq-icon-url);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+/* Learning Quests v6: hard gate/icon overrides. Append to the END of styles.css. */
+.learning-quests-view .lq-iconify-inline {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: currentColor !important;
+  line-height: 1 !important;
+  overflow: hidden !important;
 }
 
-.lq-node.is-completed,
-.lq-gate-node.is-completed {
-  color: var(--color-green, #3fb950);
+.learning-quests-view .lq-node-icon.lq-iconify-inline {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  min-height: 56px !important;
+  max-width: 56px !important;
+  max-height: 56px !important;
+  flex-basis: 56px !important;
+  margin: -2px auto 8px !important;
 }
 
-.lq-node.is-available,
-.lq-gate-node.is-available {
-  color: var(--interactive-accent);
+.learning-quests-view .lq-gate-icon.lq-iconify-inline,
+.learning-quests-view .lq-gate-node > .lq-gate-icon.lq-iconify-inline {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  max-width: 64px !important;
+  max-height: 64px !important;
+  flex: 0 0 64px !important;
+  margin: 0 auto 6px !important;
 }
 
-.lq-node.is-locked,
-.lq-gate-node.is-locked {
-  color: var(--text-normal);
+.learning-quests-view .lq-iconify-inline svg,
+.learning-quests-view .lq-iconify-inline > svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  color: currentColor !important;
+  flex: 0 0 auto !important;
 }
 
-.theme-dark .lq-node.is-locked,
-.theme-dark .lq-gate-node.is-locked {
-  color: #ffffff;
+.learning-quests-view .lq-iconify-inline svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
 }
 
-.theme-light .lq-node.is-locked,
-.theme-light .lq-gate-node.is-locked {
-  color: #000000;
+.learning-quests-view .lq-iconify-inline svg [stroke]:not([stroke="none"]) {
+  stroke: currentColor !important;
 }
 
-.lq-node-icon,
-.lq-gate-icon {
-  margin-bottom: 8px;
+.learning-quests-view .lq-gate-node,
+.learning-quests-view button.lq-gate-node {
+  width: 240px !important;
+  min-height: 168px !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  overflow: visible !important;
+  white-space: normal !important;
 }
 
-.lq-gate-node.is-progress-gate {
-  cursor: pointer;
+.learning-quests-view .lq-gate-title,
+.learning-quests-view .lq-gate-node > .lq-gate-title {
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  line-height: 1.18 !important;
+  text-align: center !important;
 }
 
-.lq-gate-meta {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  margin-top: 8px;
-  flex-wrap: wrap;
+.learning-quests-view .lq-gate-label {
+  flex: 0 0 auto !important;
 }
 
-.lq-note-picker {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
+.learning-quests-view .lq-gate-meta {
+  display: flex !important;
+  gap: 6px !important;
+  justify-content: center !important;
+  margin-top: 8px !important;
+  flex: 0 0 auto !important;
+  flex-wrap: wrap !important;
 }
 
-.lq-note-picker input {
-  min-width: 260px;
+.learning-quests-view .lq-node.is-completed .lq-node-icon,
+.learning-quests-view .lq-gate-node.is-completed .lq-gate-icon {
+  color: var(--color-green, #3fb950) !important;
 }
 
-.lq-note-picker select {
-  max-width: 320px;
+.learning-quests-view .lq-node.is-available .lq-node-icon,
+.learning-quests-view .lq-gate-node.is-available .lq-gate-icon,
+.learning-quests-view .lq-gate-node:not(.is-locked) .lq-gate-icon {
+  color: var(--interactive-accent) !important;
 }
 
-.lq-note-suggest-title {
-  font-weight: 600;
+.theme-dark .learning-quests-view .lq-node.is-locked .lq-node-icon,
+.theme-dark .learning-quests-view .lq-gate-node.is-locked .lq-gate-icon {
+  color: #ffffff !important;
 }
 
-.lq-note-suggest-path {
-  color: var(--text-muted);
-  font-size: 0.85em;
+.theme-light .learning-quests-view .lq-node.is-locked .lq-node-icon,
+.theme-light .learning-quests-view .lq-gate-node.is-locked .lq-gate-icon {
+  color: #000000 !important;
+}
+
+.learning-quests-view .lq-canvas {
+  transform-origin: 0 0 !important;
+  will-change: transform !important;
+  contain: layout paint !important;
+  backface-visibility: hidden !important;
+}
+
+.learning-quests-view .lq-canvas-viewport {
+  touch-action: none !important;
+  contain: layout paint !important;
 }
