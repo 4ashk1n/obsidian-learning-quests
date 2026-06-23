@@ -1,0 +1,478 @@
+.learning-quests-view {
+  position: relative;
+  height: 100%;
+  min-height: 480px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.lq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.lq-header h2,
+.lq-pack h3,
+.lq-chapter h4,
+.lq-quest h5 {
+  margin: 0;
+}
+
+.lq-title-block {
+  min-width: 0;
+}
+
+.lq-current-branch {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.lq-stats,
+.lq-toolbar,
+.lq-quest-title-row,
+.lq-quest-footer,
+.lq-task-heading,
+.lq-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lq-stat,
+.lq-xp,
+.lq-task-status,
+.lq-task-type,
+.lq-task-reward {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-normal);
+  background: var(--background-secondary);
+}
+
+.lq-toolbar {
+  margin-bottom: 10px;
+}
+
+.lq-pack-tabs,
+.lq-branch-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.lq-pack-tabs button.is-active,
+.lq-branch-tabs button.is-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lq-pack-tabs {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.lq-pack,
+.lq-chapter {
+  margin-top: 16px;
+}
+
+.lq-description,
+.lq-locked,
+.lq-task-content,
+.lq-task-prompt,
+.lq-progress {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  overflow-wrap: anywhere;
+}
+
+.lq-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.lq-task {
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 8px;
+}
+
+.lq-task.is-done .lq-task-status {
+  color: var(--color-green);
+  border-color: var(--color-green);
+}
+
+.lq-task.is-skipped .lq-task-status {
+  color: var(--text-muted);
+  border-color: var(--text-faint);
+}
+
+.lq-task button,
+.lq-toolbar button,
+.lq-quest-footer button {
+  margin-top: 6px;
+}
+
+.lq-options button.is-selected {
+  border-color: var(--interactive-accent);
+}
+
+.lq-options button.is-correct {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.lq-options button.is-wrong {
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+.lq-canvas-host {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.lq-render-error {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 4;
+  max-width: 420px;
+  padding: 12px;
+  border: 1px solid var(--color-red);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+}
+
+.lq-overlay {
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  left: 14px;
+  width: min(720px, calc(100% - 28px));
+  max-height: calc(100% - 28px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 34%, var(--background-modifier-border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background-primary) 92%, black);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.lq-canvas-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    linear-gradient(color-mix(in srgb, var(--text-faint) 28%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text-faint) 28%, transparent) 1px, transparent 1px),
+    var(--background-primary);
+  background-size: 32px 32px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.lq-canvas-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.lq-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.lq-links {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lq-link {
+  stroke: var(--text-faint);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.lq-link.is-locked {
+  stroke: color-mix(in srgb, var(--text-faint) 52%, transparent);
+  stroke-width: 2;
+}
+
+.lq-link.is-available {
+  stroke: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-muted));
+}
+
+.lq-link.is-completed {
+  stroke: color-mix(in srgb, var(--color-green) 72%, var(--text-muted));
+}
+
+.lq-link.is-gate {
+  stroke: color-mix(in srgb, var(--text-muted) 72%, var(--text-faint));
+  stroke-width: 3;
+}
+
+.lq-arrow path {
+  fill: var(--text-faint);
+}
+
+.lq-arrow.is-locked path {
+  fill: color-mix(in srgb, var(--text-faint) 52%, transparent);
+}
+
+.lq-arrow.is-available path {
+  fill: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-muted));
+}
+
+.lq-arrow.is-completed path {
+  fill: color-mix(in srgb, var(--color-green) 72%, var(--text-muted));
+}
+
+.lq-arrow.is-gate path {
+  fill: color-mix(in srgb, var(--text-muted) 72%, var(--text-faint));
+}
+
+.lq-gate-node {
+  position: absolute;
+  z-index: 2;
+  width: 240px;
+  height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid color-mix(in srgb, var(--text-muted) 72%, var(--background-modifier-border));
+  border-radius: 10px;
+  padding: 14px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--background-secondary) 84%, var(--background-primary)), var(--background-secondary));
+  color: var(--text-normal);
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
+}
+
+.lq-gate-label {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lq-gate-title {
+  font-size: var(--font-ui-medium);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.lq-node {
+  position: absolute;
+  z-index: 2;
+  width: 176px;
+  height: 148px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  border: 2px solid color-mix(in srgb, var(--interactive-accent) 46%, var(--background-modifier-border));
+  border-radius: 8px;
+  padding: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--interactive-accent) 18%, var(--background-secondary)), var(--background-secondary));
+  color: var(--text-normal);
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.36);
+}
+
+.lq-node-icon {
+  width: 56px;
+  height: 56px;
+  align-self: center;
+  object-fit: contain;
+  margin-top: -2px;
+}
+
+.lq-node:hover {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 26%, transparent), 0 8px 22px rgba(0, 0, 0, 0.42);
+}
+
+.lq-node.is-available {
+  border-color: color-mix(in srgb, var(--interactive-accent) 70%, var(--background-modifier-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 18%, transparent), 0 6px 18px rgba(0, 0, 0, 0.36);
+}
+
+.lq-node.is-completed {
+  border-color: var(--color-green);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-green) 24%, var(--background-secondary)), var(--background-secondary));
+}
+
+.lq-node.is-locked {
+  opacity: 0.62;
+  filter: grayscale(0.45);
+  border-color: color-mix(in srgb, var(--text-faint) 52%, var(--background-modifier-border));
+  border-style: dashed;
+  background: color-mix(in srgb, var(--background-secondary) 72%, var(--background-primary));
+  box-shadow: none;
+}
+
+.lq-node-title {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.lq-node-meta {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lq-node-badge {
+  min-width: 34px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--background-primary) 72%, transparent);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.5;
+}
+
+.lq-node-xp {
+  color: var(--text-normal);
+  border-color: color-mix(in srgb, var(--interactive-accent) 46%, var(--background-modifier-border));
+}
+
+.lq-node-progress {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.lq-modal {
+  width: min(620px, 84vw);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 4px 8px 8px;
+}
+
+.lq-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-right: 28px;
+}
+
+.lq-modal-header h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lq-modal .lq-xp {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.lq-modal .lq-quest-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.lq-modal .lq-options button,
+.lq-modal .lq-task button,
+.lq-modal .lq-quest-footer button {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.lq-modal .lq-description,
+.lq-modal .lq-locked {
+  margin-bottom: 14px;
+}
+
+.lq-modal .lq-tasks {
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.lq-modal .lq-task {
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.lq-modal .lq-task-heading {
+  margin-bottom: 8px;
+}
+
+.lq-modal .lq-task-content,
+.lq-modal .lq-task-prompt {
+  margin-bottom: 10px;
+}
+
+.lq-modal .lq-options {
+  margin-top: 10px;
+}
+
+.lq-note-picker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.lq-note-picker input,
+.lq-note-picker select {
+  width: 100%;
+}
+
+.lq-note-picker select {
+  grid-column: 2;
+}
+
+.lq-skip-button {
+  margin-left: 8px;
+}
+
+.lq-settings-textarea {
+  width: 100%;
+  min-width: 320px;
+}
+
+.lq-tracked-folders-input {
+  width: 100%;
+  min-height: 140px;
+  box-sizing: border-box;
+}

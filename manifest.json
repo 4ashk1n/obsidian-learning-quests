@@ -1,0 +1,9 @@
+{
+  "id": "learning-quests",
+  "name": "Learning Quests",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Gamified learning with quests and achievement branches.",
+  "author": "Dmitry",
+  "isDesktopOnly": false
+}

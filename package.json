@@ -1,0 +1,22 @@
+{
+  "name": "obsidian-learning-quests",
+  "version": "0.1.0",
+  "description": "Gamified learning quests for Obsidian.",
+  "main": "main.js",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs"
+  },
+  "keywords": [],
+  "author": "Dmitry",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "obsidian": "^1.13.1"
+  },
+  "devDependencies": {
+    "builtin-modules": "^5.2.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^6.0.3"
+  }
+}
