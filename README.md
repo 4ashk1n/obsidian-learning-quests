@@ -88,6 +88,8 @@ Quest pack files must be valid `.json` files.
 - Smart edge anchors: arrows connect to the nearest side of each node.
 - `Center map` and `Reset node positions` controls.
 - Automatic quest pack reload when JSON files change.
+- <img width="1702" height="1332" alt="image_2026-06-24_23-22-18" src="https://github.com/user-attachments/assets/5bfc1af3-cd7c-4da0-9330-06db7fc5e182" />
+
 
 ## Quest Pack Location
 
