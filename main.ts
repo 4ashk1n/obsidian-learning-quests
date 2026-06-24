@@ -4,6 +4,7 @@ import {
   LearningQuestsSettings,
   ProgressState,
   Quest,
+  QuestNodePosition,
   QuestPack,
   QuestTask,
   SingleChoiceTask
@@ -23,6 +24,7 @@ const GATE_ICON_SIZE = 64;
 
 const DEFAULT_SETTINGS: LearningQuestsSettings = {
   trackedFolders: ["Learning Quests"],
+  nodePositions: {},
   progress: {
     xp: 0,
     completedQuests: [],
@@ -84,6 +86,7 @@ export default class LearningQuestsPlugin extends Plugin {
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     this.settings.trackedFolders = this.settings.trackedFolders ?? DEFAULT_SETTINGS.trackedFolders;
+    this.settings.nodePositions = normalizeNodePositions(this.settings.nodePositions);
     this.settings.progress = {
       ...DEFAULT_SETTINGS.progress,
       ...this.settings.progress,
@@ -354,6 +357,29 @@ export default class LearningQuestsPlugin extends Plugin {
     this.refreshViews();
   }
 
+  getNodePosition(layoutKey: string): QuestNodePosition | undefined {
+    return this.settings.nodePositions[layoutKey];
+  }
+
+  async setNodePosition(layoutKey: string, position: QuestNodePosition) {
+    this.settings.nodePositions[layoutKey] = {
+      x: Math.round(position.x),
+      y: Math.round(position.y)
+    };
+    await this.saveSettings();
+  }
+
+  async resetNodePositions(scopePrefix: string) {
+    for (const key of Object.keys(this.settings.nodePositions)) {
+      if (key.startsWith(scopePrefix)) {
+        delete this.settings.nodePositions[key];
+      }
+    }
+
+    await this.saveSettings();
+    this.refreshViews();
+  }
+
   getTrackedNotePaths(): string[] {
     const folders = this.settings.trackedFolders.map((folder) => normalizeVaultPath(folder)).filter(Boolean);
 
@@ -483,6 +509,11 @@ class LearningQuestsView extends ItemView {
         this.render();
       };
     });
+    toolbar.createEl("button", { text: "Reset node positions" }, (button) => {
+      button.onclick = () => {
+        void this.plugin.resetNodePositions(`${activePack.packId}:${activeChapter.id}:`);
+      };
+    });
 
     const packTabs = overlay.createDiv({ cls: "lq-pack-tabs" });
     for (const pack of this.plugin.questPacks) {
@@ -556,7 +587,7 @@ class LearningQuestsView extends ItemView {
         x: 36 + (index % 4) * gapX,
         y: (row - 1) * gapY
       };
-      positions.set(quest.id, quest.position ?? fallback);
+      positions.set(quest.id, this.plugin.getNodePosition(this.getNodeLayoutKey(viewportKey, quest.id)) ?? quest.position ?? fallback);
     });
 
     const gatePosition = {
@@ -592,10 +623,29 @@ class LearningQuestsView extends ItemView {
     svg.setAttr("width", "100%");
     svg.setAttr("height", "100%");
     this.renderArrowMarkers(svg);
-    this.renderGateLinks(svg, positions, worldOffset, gatePosition, nodeHeight, gateWidth, gateHeight, quests);
+    const canvasPositions = new Map<string, QuestNodePosition>();
+    const nodeMetrics = new Map<string, { width: number; height: number }>();
+    for (const quest of quests) {
+      const position = positions.get(quest.id);
+      if (!position) {
+        continue;
+      }
+
+      canvasPositions.set(quest.id, {
+        x: position.x + worldOffset.x,
+        y: position.y + worldOffset.y
+      });
+      nodeMetrics.set(quest.id, this.getQuestNodeMetrics(quest, nodeWidth, nodeHeight, gateWidth, gateHeight));
+    }
+
+    const links: CanvasNodeLink[] = [];
+    this.renderGateLinks(svg, canvasPositions, {
+      x: gatePosition.x + worldOffset.x,
+      y: gatePosition.y + worldOffset.y
+    }, nodeHeight, gateWidth, gateHeight, quests, links);
 
     for (const quest of quests) {
-      const to = positions.get(quest.id);
+      const to = canvasPositions.get(quest.id);
       if (!to) {
         continue;
       }
@@ -606,46 +656,53 @@ class LearningQuestsView extends ItemView {
       const linkState = toCompleted ? "is-completed" : toUnlocked ? "is-available" : "is-locked";
 
       for (const requiredId of quest.requires ?? []) {
-        const from = positions.get(requiredId);
+        const from = canvasPositions.get(requiredId);
         const fromQuest = quests.find((candidate) => candidate.id === requiredId);
         if (!from || !fromQuest) {
           continue;
         }
 
-        const fromMetrics = this.getQuestNodeMetrics(fromQuest, nodeWidth, nodeHeight, gateWidth, gateHeight);
-        const toMetrics = this.getQuestNodeMetrics(quest, nodeWidth, nodeHeight, gateWidth, gateHeight);
+        const fromMetrics = nodeMetrics.get(requiredId) ?? this.getQuestNodeMetrics(fromQuest, nodeWidth, nodeHeight, gateWidth, gateHeight);
+        const toMetrics = nodeMetrics.get(quest.id) ?? this.getQuestNodeMetrics(quest, nodeWidth, nodeHeight, gateWidth, gateHeight);
         const line = svg.createSvg("line", { cls: "lq-link" });
         line.addClass(linkState);
-        line.setAttr("x1", String(from.x + worldOffset.x + fromMetrics.width));
-        line.setAttr("y1", String(from.y + worldOffset.y + fromMetrics.height / 2));
-        line.setAttr("x2", String(to.x + worldOffset.x));
-        line.setAttr("y2", String(to.y + worldOffset.y + toMetrics.height / 2));
+        this.positionLinkLine(line, { position: from, metrics: fromMetrics }, { position: to, metrics: toMetrics });
         line.setAttr("marker-end", `url(#lq-arrow-${linkState.replace("is-", "")})`);
+        links.push({ line, fromId: requiredId, toId: quest.id });
       }
     }
 
+    const dragContext: NodeDragContext = {
+      viewport,
+      canvas,
+      viewportKey,
+      worldOffset,
+      canvasPositions,
+      nodeMetrics,
+      links,
+      canvasWidth: worldWidth,
+      canvasHeight: worldHeight
+    };
+
     for (const quest of quests) {
-      const position = positions.get(quest.id);
+      const position = canvasPositions.get(quest.id);
       if (!position) {
         continue;
       }
 
-      this.renderQuestNode(canvas, quest, allQuests, {
-        x: position.x + worldOffset.x,
-        y: position.y + worldOffset.y
-      });
+      this.renderQuestNode(canvas, quest, allQuests, position, dragContext);
     }
   }
 
   private renderGateLinks(
     svg: SVGElement,
-    positions: Map<string, { x: number; y: number }>,
-    worldOffset: { x: number; y: number },
-    gatePosition: { x: number; y: number },
+    positions: Map<string, QuestNodePosition>,
+    gatePosition: QuestNodePosition,
     nodeHeight: number,
     gateWidth: number,
     gateHeight: number,
-    quests: Quest[]
+    quests: Quest[],
+    links: CanvasNodeLink[]
   ) {
     const roots = quests.filter((quest) => (quest.requires ?? []).length === 0);
 
@@ -657,12 +714,14 @@ class LearningQuestsView extends ItemView {
 
       const line = svg.createSvg("line", { cls: "lq-link" });
       line.addClass("is-gate");
-      line.setAttr("x1", String(gatePosition.x + worldOffset.x + gateWidth));
-      line.setAttr("y1", String(gatePosition.y + worldOffset.y + gateHeight / 2));
       const targetMetrics = this.getQuestNodeMetrics(quest, NODE_WIDTH, nodeHeight, gateWidth, gateHeight);
-      line.setAttr("x2", String(position.x + worldOffset.x));
-      line.setAttr("y2", String(position.y + worldOffset.y + targetMetrics.height / 2));
+      const fromEndpoint = {
+        position: gatePosition,
+        metrics: { width: gateWidth, height: gateHeight }
+      };
+      this.positionLinkLine(line, fromEndpoint, { position, metrics: targetMetrics });
       line.setAttr("marker-end", "url(#lq-arrow-gate)");
+      links.push({ line, staticFrom: fromEndpoint, toId: quest.id });
     }
   }
 
@@ -852,7 +911,8 @@ class LearningQuestsView extends ItemView {
     parent: HTMLElement,
     quest: Quest,
     allQuests: Quest[],
-    position: { x: number; y: number }
+    position: QuestNodePosition,
+    dragContext: NodeDragContext
   ) {
     const progress = this.plugin.getProgress();
     const completed = progress.completedQuests.includes(quest.id);
@@ -871,14 +931,22 @@ class LearningQuestsView extends ItemView {
         unlocked ? "is-unlocked" : "is-locked"
       ].filter(Boolean).join(" ")
     });
-    node.style.left = `${position.x}px`;
-    node.style.top = `${position.y}px`;
+    node.style.left = "0";
+    node.style.top = "0";
+    node.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
     if (gate) {
       this.applyGateLayout(node, quest.title);
     }
     node.disabled = false;
-    node.onpointerdown = (event) => event.stopPropagation();
-    node.onclick = () => new QuestDetailsModal(this.plugin, quest, allQuests).open();
+    this.registerNodeDrag(node, quest, dragContext);
+    node.onclick = () => {
+      if (node.hasClass("is-drag-suppressed")) {
+        node.removeClass("is-drag-suppressed");
+        return;
+      }
+
+      new QuestDetailsModal(this.plugin, quest, allQuests).open();
+    };
 
     if (quest.icon) {
       this.renderIcon(node, quest.icon, gate ? "lq-gate-icon" : "lq-node-icon");
@@ -906,6 +974,195 @@ class LearningQuestsView extends ItemView {
       text: `${possibleXp} XP`
     });
     xpBadge.addClass("lq-node-xp");
+  }
+
+  private registerNodeDrag(node: HTMLElement, quest: Quest, context: NodeDragContext) {
+    let pointerId: number | null = null;
+    let startClientX = 0;
+    let startClientY = 0;
+    let startX = 0;
+    let startY = 0;
+    let nextX = 0;
+    let nextY = 0;
+    let moved = false;
+    let pendingFrame: number | null = null;
+    const dragThreshold = 4;
+
+    const applyDragFrame = () => {
+      pendingFrame = null;
+      const metrics = context.nodeMetrics.get(quest.id) ?? this.getQuestNodeMetrics(quest, NODE_WIDTH, NODE_HEIGHT, GATE_WIDTH, GATE_MIN_HEIGHT);
+      const clampedX = clamp(nextX, 0, Math.max(0, context.canvasWidth - metrics.width));
+      const clampedY = clamp(nextY, 0, Math.max(0, context.canvasHeight - metrics.height));
+      nextX = clampedX;
+      nextY = clampedY;
+
+      context.canvasPositions.set(quest.id, { x: clampedX, y: clampedY });
+      node.style.transform = `translate3d(${clampedX}px, ${clampedY}px, 0)`;
+      this.updateNodeLinks(quest.id, context);
+    };
+
+    const scheduleDragFrame = () => {
+      if (pendingFrame !== null) {
+        return;
+      }
+
+      pendingFrame = requestAnimationFrame(applyDragFrame);
+    };
+
+    node.onpointerdown = (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      pointerId = event.pointerId;
+      startClientX = event.clientX;
+      startClientY = event.clientY;
+      const currentPosition = context.canvasPositions.get(quest.id) ?? { x: 0, y: 0 };
+      startX = currentPosition.x;
+      startY = currentPosition.y;
+      nextX = startX;
+      nextY = startY;
+      moved = false;
+      node.setPointerCapture(event.pointerId);
+    };
+
+    node.onpointermove = (event) => {
+      if (pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const state = this.getViewportState(context.viewportKey);
+      const deltaX = (event.clientX - startClientX) / state.scale;
+      const deltaY = (event.clientY - startClientY) / state.scale;
+
+      if (!moved && Math.hypot(deltaX, deltaY) < dragThreshold) {
+        return;
+      }
+
+      moved = true;
+      node.addClass("is-dragging");
+      context.viewport.addClass("is-dragging-node");
+      nextX = startX + deltaX;
+      nextY = startY + deltaY;
+      scheduleDragFrame();
+    };
+
+    const finishDrag = (event: PointerEvent) => {
+      if (pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      pointerId = null;
+      node.releasePointerCapture(event.pointerId);
+      node.removeClass("is-dragging");
+      context.viewport.removeClass("is-dragging-node");
+
+      if (pendingFrame !== null) {
+        cancelAnimationFrame(pendingFrame);
+        applyDragFrame();
+      }
+
+      if (!moved) {
+        return;
+      }
+
+      node.addClass("is-drag-suppressed");
+      const savedPosition = context.canvasPositions.get(quest.id) ?? { x: nextX, y: nextY };
+      void this.plugin.setNodePosition(this.getNodeLayoutKey(context.viewportKey, quest.id), {
+        x: savedPosition.x - context.worldOffset.x,
+        y: savedPosition.y - context.worldOffset.y
+      });
+    };
+
+    node.onpointerup = finishDrag;
+    node.onpointercancel = (event) => {
+      if (pointerId !== event.pointerId) {
+        return;
+      }
+
+      pointerId = null;
+      node.removeClass("is-dragging");
+      context.viewport.removeClass("is-dragging-node");
+      if (pendingFrame !== null) {
+        cancelAnimationFrame(pendingFrame);
+        pendingFrame = null;
+      }
+    };
+  }
+
+  private updateNodeLinks(questId: string, context: NodeDragContext) {
+    for (const link of context.links) {
+      if (link.fromId !== questId && link.toId !== questId) {
+        continue;
+      }
+
+      const fromEndpoint = link.fromId
+        ? this.getNodeEndpoint(link.fromId, context)
+        : link.staticFrom;
+      const toEndpoint = this.getNodeEndpoint(link.toId, context);
+
+      if (fromEndpoint && toEndpoint) {
+        this.positionLinkLine(link.line, fromEndpoint, toEndpoint);
+      }
+    }
+  }
+
+  private getNodeEndpoint(nodeId: string, context: NodeDragContext): CanvasLinkEndpoint | undefined {
+    const position = context.canvasPositions.get(nodeId);
+    const metrics = context.nodeMetrics.get(nodeId);
+    if (!position || !metrics) {
+      return undefined;
+    }
+
+    return { position, metrics };
+  }
+
+  private positionLinkLine(line: SVGLineElement, from: CanvasLinkEndpoint, to: CanvasLinkEndpoint) {
+    const fromPoint = this.getNearestRectBoundaryPoint(from, this.getRectCenter(to));
+    const toPoint = this.getNearestRectBoundaryPoint(to, this.getRectCenter(from));
+
+    line.setAttr("x1", String(fromPoint.x));
+    line.setAttr("y1", String(fromPoint.y));
+    line.setAttr("x2", String(toPoint.x));
+    line.setAttr("y2", String(toPoint.y));
+  }
+
+  private getNearestRectBoundaryPoint(rect: CanvasLinkEndpoint, targetCenter: QuestNodePosition): QuestNodePosition {
+    const center = this.getRectCenter(rect);
+    const halfWidth = rect.metrics.width / 2;
+    const halfHeight = rect.metrics.height / 2;
+    const dx = targetCenter.x - center.x;
+    const dy = targetCenter.y - center.y;
+
+    if (dx === 0 && dy === 0) {
+      return { x: center.x + halfWidth, y: center.y };
+    }
+
+    const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : halfWidth / Math.abs(dx);
+    const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : halfHeight / Math.abs(dy);
+    const scale = Math.min(scaleX, scaleY);
+
+    return {
+      x: center.x + dx * scale,
+      y: center.y + dy * scale
+    };
+  }
+
+  private getRectCenter(rect: CanvasLinkEndpoint): QuestNodePosition {
+    return {
+      x: rect.position.x + rect.metrics.width / 2,
+      y: rect.position.y + rect.metrics.height / 2
+    };
+  }
+
+  private getNodeLayoutKey(viewportKey: string, questId: string): string {
+    return `${viewportKey}:${questId}`;
   }
 
   private renderIcon(parent: HTMLElement, iconName: string, className: string) {
@@ -1295,6 +1552,35 @@ function normalizeVaultPath(path: string): string {
   return path.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 }
 
+function normalizeNodePositions(value: unknown): Record<string, QuestNodePosition> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  const normalized: Record<string, QuestNodePosition> = {};
+  for (const [key, position] of Object.entries(value)) {
+    if (!position || typeof position !== "object" || Array.isArray(position)) {
+      continue;
+    }
+
+    const rawPosition = position as Record<string, unknown>;
+    if (typeof rawPosition.x !== "number" || typeof rawPosition.y !== "number") {
+      continue;
+    }
+
+    if (!Number.isFinite(rawPosition.x) || !Number.isFinite(rawPosition.y)) {
+      continue;
+    }
+
+    normalized[key] = {
+      x: Math.round(rawPosition.x),
+      y: Math.round(rawPosition.y)
+    };
+  }
+
+  return normalized;
+}
+
 function createSvgElement<K extends keyof SVGElementTagNameMap>(tagName: K): SVGElementTagNameMap[K] {
   return document.createElementNS("http://www.w3.org/2000/svg", tagName);
 }
@@ -1315,6 +1601,33 @@ type CanvasViewportState = {
   y: number;
   scale: number;
   initialized: boolean;
+};
+
+type CanvasNodeLink = {
+  line: SVGLineElement;
+  fromId?: string;
+  staticFrom?: CanvasLinkEndpoint;
+  toId: string;
+};
+
+type CanvasLinkEndpoint = {
+  position: QuestNodePosition;
+  metrics: {
+    width: number;
+    height: number;
+  };
+};
+
+type NodeDragContext = {
+  viewport: HTMLElement;
+  canvas: HTMLElement;
+  viewportKey: string;
+  worldOffset: QuestNodePosition;
+  canvasPositions: Map<string, QuestNodePosition>;
+  nodeMetrics: Map<string, { width: number; height: number }>;
+  links: CanvasNodeLink[];
+  canvasWidth: number;
+  canvasHeight: number;
 };
 
 function clamp(value: number, min: number, max: number): number {

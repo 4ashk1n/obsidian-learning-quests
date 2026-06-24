@@ -92,7 +92,13 @@ export type ProgressState = {
   selectedNotes: Record<string, string>;
 };
 
+export type QuestNodePosition = {
+  x: number;
+  y: number;
+};
+
 export type LearningQuestsSettings = {
   trackedFolders: string[];
   progress: ProgressState;
+  nodePositions: Record<string, QuestNodePosition>;
 };
