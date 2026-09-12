@@ -35,18 +35,39 @@ export function isTaskSkipped(
 export function updateStreak(streak: StreakState, date: Date): StreakState {
   const today = toDateKey(date);
 
-  if (streak.lastCompletionDate === today) {
+  if (streak.lastCompletedDate === today) {
     return streak;
   }
 
   const yesterday = toDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
-  const current = streak.lastCompletionDate === yesterday ? streak.current + 1 : 1;
+  const current = streak.lastCompletedDate === yesterday ? streak.current + 1 : 1;
 
   return {
     current,
     best: Math.max(streak.best, current),
-    lastCompletionDate: today
+    lastCompletedDate: today
   };
+}
+
+export function normalizeStreak(streak: StreakState, date: Date): StreakState {
+  if (isStreakActive(streak, date)) {
+    return streak;
+  }
+
+  return {
+    ...streak,
+    current: 0
+  };
+}
+
+export function isStreakActive(streak: StreakState, date: Date): boolean {
+  if (streak.current <= 0 || !streak.lastCompletedDate) {
+    return false;
+  }
+
+  const today = toDateKey(date);
+  const yesterday = toDateKey(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+  return streak.lastCompletedDate === today || streak.lastCompletedDate === yesterday;
 }
 
 function toDateKey(date: Date): string {
