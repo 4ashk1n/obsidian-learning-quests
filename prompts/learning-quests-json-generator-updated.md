@@ -155,15 +155,19 @@ Assign XP primarily to individual tasks with `reward.xp`. Keep quest-level `rewa
    - one knowledge check when appropriate;
    - one Obsidian note task that helps build a knowledge base.
 6. Assign coordinates:
-   - `x` increases left to right as learning advances;
+   - Quest nodes are visually large. Treat every node as occupying a reserved box of at least `220 x 220` pixels, even if the rendered node looks smaller. Use this safety box when spacing coordinates.
+   - `x` usually increases left to right as learning advances, but do not force every dependency chain into one long horizontal line.
    - `y = 0` is the center line;
    - branches use negative and positive `y`;
    - merge topics should require all prerequisite branch quests;
-   - keep enough spacing between nodes, usually 240-300 on `x` and 140-180 on `y`.
-   - avoid coordinate collisions; no two quests may share the same or visually overlapping position.
-   - minimize edge crossings; if a dependency would create a long diagonal crossing many branches, move the dependent quest or introduce a clearer synthesis node.
-   - keep related branches in stable horizontal lanes; do not weave branches through each other.
-   - use layered layout: prerequisites on the left, derived topics to the right, synthesis/summary nodes further right.
+   - keep enough spacing between node safety boxes, usually at least 280-340 on `x` and 240-300 on `y`.
+   - avoid coordinate collisions; no two quests may share the same or visually overlapping 220 x 220 safety box.
+   - minimize edge crossings and long edges. It looks especially bad when early nodes have direct links to far final nodes, so avoid dependencies that jump across the whole map unless they are truly necessary.
+   - when a late synthesis topic depends on early foundations and later topics, prefer requiring the nearest meaningful milestone, gate, or synthesis node instead of drawing a long edge from the first block to the end.
+   - keep related branches in stable lanes; do not weave branches through each other.
+   - use layered layout: prerequisites earlier, derived topics later, synthesis/summary nodes after their prerequisites.
+   - layout may progress downward as well as left-to-right. If a vertical or stair-step arrangement makes the graph easier to read, place a module below the previous module and continue from top to bottom before moving right again.
+   - for very wide books or maps, prefer balanced rows/columns of modules over a single extremely long horizontal strip.
 7. Assign XP:
    - 5 XP for tiny orientation quests;
    - 10-15 XP for normal concept quests;
@@ -234,6 +238,8 @@ Use these patterns:
 Prefer a nonlinear quest graph when the material allows it. Avoid turning the whole source into one long linear chain unless the prerequisite structure truly requires it. Use forks for independent subtopics, side branches for examples/proofs/applications, and joins for synthesis topics. Do not violate prerequisites just to make the graph branchy.
 
 Nonlinear does not mean tangled. The graph should be readable as a roadmap. Prefer several clean parallel lanes over many crisscrossing dependencies. When a topic depends on several branches, place it to the right of those branches and near their visual midpoint.
+
+Avoid long-range dependency edges that connect an early foundation quest directly to a far later final quest. If the dependency is conceptually real but visually too long, encode it through an intermediate gate, checkpoint, or synthesis quest that already represents the completed region. Final synthesis nodes should usually depend on recent milestone nodes, not on many scattered early quests.
 
 Do not use dependencies as rewards. A quest is unlocked when all IDs in `requires` are completed.
 
@@ -344,9 +350,11 @@ Before returning the file, validate mentally:
 - node titles are short;
 - icons use valid, existing Iconify `prefix:name` identifiers when present; do not invent icon names;
 - coordinates form a readable single graph;
-- no coordinate collisions or overlapping nodes;
+- no coordinate collisions or overlapping 220 x 220 node safety boxes;
 - edge crossings are minimized;
+- long-range links from early blocks to final blocks are avoided or routed through milestone/gate/synthesis nodes;
 - related topics stay in consistent visual lanes;
+- the graph is visually balanced; use downward or stair-step progression when it improves readability compared with one very long left-to-right strip;
 - the graph is nonlinear where the material allows it;
 - task rewards are assigned with `reward.xp`;
 - note paths are consistent.

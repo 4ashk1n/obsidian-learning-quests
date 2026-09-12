@@ -1,0 +1,520 @@
+{
+  "trackedFolders": [
+    "Естественные науки/Физика",
+    "Компьютерные науки",
+    "Формальные науки"
+  ],
+  "nodePositions": {
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-electrical-levels": {
+      "x": 1248,
+      "y": -215
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-packages-lines": {
+      "x": 607,
+      "y": 2474
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-comb-gate": {
+      "x": 2074,
+      "y": 20
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-comb-timing": {
+      "x": 3397,
+      "y": 33
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-hdl-params-testbench": {
+      "x": 342,
+      "y": 1031
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-blocks-gate": {
+      "x": -16,
+      "y": 1173
+    },
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-exceptions-extensions": {
+      "x": 2724,
+      "y": 1609
+    },
+    "machine-learning-systems-quests:main-map:pmpp5-scan-filter-prefix": {
+      "x": 8549,
+      "y": 8723
+    },
+    "machine-learning-systems-quests:main-map:pmpp5-conclusion-synthesis": {
+      "x": 13633,
+      "y": 8824
+    }
+  },
+  "progress": {
+    "xp": 341,
+    "completedQuests": [
+      "v2-start-gate",
+      "v2-plan-abstraction",
+      "v2-digital-gate",
+      "v2-number-systems",
+      "v2-logic-gates",
+      "v2-electrical-levels",
+      "v2-cmos-basics",
+      "v2-power-basics",
+      "v2-comb-gate",
+      "v2-boolean-functions",
+      "v2-boolean-algebra",
+      "v2-mux-decoders",
+      "v2-karnaugh-maps",
+      "gate-foundations",
+      "sets-notation",
+      "real-numbers",
+      "supremum",
+      "sequences",
+      "bolzano-cauchy",
+      "gate-analysis",
+      "functions-limits",
+      "continuity-compact",
+      "v2-comb-timing",
+      "v2-seq-gate",
+      "v2-latches-flipflops",
+      "v2-sync-design",
+      "v2-fsm-design",
+      "v2-seq-timing",
+      "v2-metastability",
+      "v2-parallelism-basics",
+      "v2-hdl-gate",
+      "v2-hdl-modules",
+      "v2-hdl-comb",
+      "v2-hdl-seq",
+      "v2-hdl-fsm",
+      "v2-hdl-params-testbench"
+    ],
+    "completedTasks": {
+      "v2-start-gate": [
+        "open"
+      ],
+      "v2-plan-abstraction": [
+        "read",
+        "question"
+      ],
+      "v2-digital-gate": [
+        "open"
+      ],
+      "v2-number-systems": [
+        "read",
+        "question"
+      ],
+      "v2-logic-gates": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-electrical-levels": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-cmos-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-power-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-comb-gate": [
+        "open"
+      ],
+      "v2-boolean-functions": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-boolean-algebra": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-mux-decoders": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-karnaugh-maps": [
+        "read",
+        "question",
+        "note"
+      ],
+      "gate-foundations": [
+        "open"
+      ],
+      "sets-notation": [
+        "read",
+        "check",
+        "note"
+      ],
+      "real-numbers": [
+        "read",
+        "check",
+        "note"
+      ],
+      "supremum": [
+        "read",
+        "check",
+        "note"
+      ],
+      "sequences": [
+        "read",
+        "check",
+        "note"
+      ],
+      "bolzano-cauchy": [
+        "read",
+        "check",
+        "note"
+      ],
+      "gate-analysis": [
+        "open"
+      ],
+      "functions-limits": [
+        "read",
+        "check",
+        "note"
+      ],
+      "continuity-compact": [
+        "read",
+        "check",
+        "note"
+      ],
+      "v2-comb-timing": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-seq-gate": [
+        "open"
+      ],
+      "v2-latches-flipflops": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-sync-design": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-fsm-design": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-seq-timing": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-metastability": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-parallelism-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-hdl-gate": [
+        "open"
+      ],
+      "v2-hdl-modules": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-comb": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-seq": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-fsm": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-params-testbench": [
+        "question",
+        "read"
+      ]
+    },
+    "skippedTasks": {
+      "v2-start-gate": [],
+      "v2-plan-abstraction": [
+        "note"
+      ],
+      "v2-digital-gate": [],
+      "v2-number-systems": [
+        "note"
+      ],
+      "v2-logic-gates": [],
+      "v2-electrical-levels": [],
+      "v2-cmos-basics": [],
+      "v2-power-basics": [],
+      "v2-comb-gate": [],
+      "v2-boolean-functions": [],
+      "v2-boolean-algebra": [],
+      "v2-mux-decoders": [],
+      "v2-karnaugh-maps": [],
+      "gate-foundations": [],
+      "sets-notation": [],
+      "real-numbers": [],
+      "supremum": [],
+      "sequences": [],
+      "bolzano-cauchy": [],
+      "gate-analysis": [],
+      "functions-limits": [],
+      "continuity-compact": [],
+      "v2-comb-timing": [],
+      "v2-seq-gate": [],
+      "v2-latches-flipflops": [],
+      "v2-sync-design": [],
+      "v2-fsm-design": [],
+      "v2-seq-timing": [],
+      "v2-metastability": [],
+      "v2-parallelism-basics": [],
+      "v2-hdl-gate": [],
+      "v2-hdl-modules": [
+        "note"
+      ],
+      "v2-hdl-comb": [
+        "note"
+      ],
+      "v2-hdl-seq": [
+        "note"
+      ],
+      "v2-hdl-fsm": [
+        "note"
+      ],
+      "v2-hdl-params-testbench": [
+        "note"
+      ]
+    },
+    "rewardedTasks": {
+      "v2-start-gate": [
+        "open"
+      ],
+      "v2-plan-abstraction": [
+        "read",
+        "question"
+      ],
+      "v2-digital-gate": [
+        "open"
+      ],
+      "v2-number-systems": [
+        "read",
+        "question"
+      ],
+      "v2-logic-gates": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-electrical-levels": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-cmos-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-power-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-comb-gate": [
+        "open"
+      ],
+      "v2-boolean-functions": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-boolean-algebra": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-mux-decoders": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-karnaugh-maps": [
+        "read",
+        "question",
+        "note"
+      ],
+      "gate-foundations": [
+        "open"
+      ],
+      "sets-notation": [
+        "read",
+        "check",
+        "note"
+      ],
+      "real-numbers": [
+        "read",
+        "check",
+        "note"
+      ],
+      "supremum": [
+        "read",
+        "check",
+        "note"
+      ],
+      "sequences": [
+        "read",
+        "check",
+        "note"
+      ],
+      "bolzano-cauchy": [
+        "read",
+        "check",
+        "note"
+      ],
+      "gate-analysis": [
+        "open"
+      ],
+      "functions-limits": [
+        "read",
+        "check",
+        "note"
+      ],
+      "continuity-compact": [
+        "read",
+        "check",
+        "note"
+      ],
+      "v2-comb-timing": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-seq-gate": [
+        "open"
+      ],
+      "v2-latches-flipflops": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-sync-design": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-fsm-design": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-seq-timing": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-metastability": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-parallelism-basics": [
+        "read",
+        "question",
+        "note"
+      ],
+      "v2-hdl-gate": [
+        "open"
+      ],
+      "v2-hdl-modules": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-comb": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-seq": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-fsm": [
+        "read",
+        "question"
+      ],
+      "v2-hdl-params-testbench": [
+        "question",
+        "read"
+      ]
+    },
+    "streak": {
+      "current": 1,
+      "best": 1,
+      "lastCompletionDate": "2026-07-25"
+    },
+    "answers": {
+      "v2-plan-abstraction:question": "b",
+      "v2-number-systems:question": "a",
+      "v2-logic-gates:question": "c",
+      "v2-electrical-levels:question": "a",
+      "v2-cmos-basics:question": "a",
+      "v2-power-basics:question": "a",
+      "v2-boolean-functions:question": "a",
+      "v2-boolean-algebra:question": "a",
+      "v2-mux-decoders:question": "a",
+      "v2-karnaugh-maps:question": "a",
+      "sets-notation:check": "inter",
+      "real-numbers:check": "dist",
+      "supremum:check": "leastupper",
+      "sequences:check": "cauchy",
+      "bolzano-cauchy:check": "subseq",
+      "functions-limits:check": "near",
+      "continuity-compact:check": "bounds",
+      "v2-comb-timing:question": "a",
+      "v2-latches-flipflops:question": "a",
+      "v2-sync-design:question": "a",
+      "v2-fsm-design:question": "a",
+      "v2-seq-timing:question": "a",
+      "v2-metastability:question": "a",
+      "v2-parallelism-basics:question": "a",
+      "v2-hdl-modules:question": "a",
+      "v2-hdl-comb:question": "a",
+      "v2-hdl-seq:question": "a",
+      "v2-hdl-fsm:question": "a",
+      "v2-hdl-params-testbench:question": "a"
+    },
+    "selectedNotes": {
+      "v2-logic-gates:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Логические элементы.md",
+      "v2-electrical-levels:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Логические уровни.md",
+      "v2-cmos-basics:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Полевой МОП-транзистор.md",
+      "v2-power-basics:note": "Естественные науки/Физика/Электроника/Потребляемая мощность.md",
+      "v2-boolean-functions:note": "Формальные науки/Математика/Дискретная математика/Булева алгебра/Логическая функция.md",
+      "v2-boolean-algebra:note": "Формальные науки/Математика/Дискретная математика/Булева алгебра/Базовые теоремы булевой алгебры.md",
+      "v2-mux-decoders:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Комбинационные логические элементы/Мультиплексор.md",
+      "v2-karnaugh-maps:note": "Формальные науки/Математика/Дискретная математика/Булева алгебра/Карты Карно.md",
+      "sets-notation:note": "Формальные науки/Математика/Дискретная математика/Множество.md",
+      "real-numbers:note": "Формальные науки/Математика/База/Множество действительных чисел.md",
+      "supremum:note": "Формальные науки/Математика/Математический Анализ/Экстремум.md",
+      "sequences:note": "Формальные науки/Математика/Математический Анализ/Последовательность.md",
+      "bolzano-cauchy:note": "Формальные науки/Математика/Математический Анализ/Теорема Больцано-Вейерштрасса.md",
+      "functions-limits:note": "Формальные науки/Математика/Математический Анализ/Предел функции.md",
+      "continuity-compact:note": "Формальные науки/Математика/Математический Анализ/Предел функции.md",
+      "v2-comb-timing:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Временные характеристики.md",
+      "v2-latches-flipflops:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Последовательностные логические устройства/Триггеры и защелки.md",
+      "v2-sync-design:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Последовательностные схемы.md",
+      "v2-fsm-design:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Конечные автоматы.md",
+      "v2-seq-timing:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Временные характеристики.md",
+      "v2-metastability:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Временные характеристики/Метастабильность.md",
+      "v2-parallelism-basics:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Параллелизм.md"
+    }
+  }
+}

@@ -126,3 +126,15 @@
   touch-action: none !important;
   contain: layout paint !important;
 }
+
+.learning-quests-view .lq-node,
+.learning-quests-view .lq-gate-node {
+  will-change: transform !important;
+}
+
+.learning-quests-view .lq-node.is-dragging,
+.learning-quests-view .lq-gate-node.is-dragging {
+  cursor: move !important;
+  z-index: 3 !important;
+  user-select: none !important;
+}
