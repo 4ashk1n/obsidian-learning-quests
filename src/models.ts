@@ -97,8 +97,18 @@ export type QuestNodePosition = {
   y: number;
 };
 
+export type PackBackgroundMode = "none" | "grid" | "dots" | "gradient";
+
+export type PackBackgroundSettings = {
+  mode: PackBackgroundMode;
+  gradientStart: string;
+  gradientEnd: string;
+};
+
 export type LearningQuestsSettings = {
   trackedFolders: string[];
   progress: ProgressState;
   nodePositions: Record<string, QuestNodePosition>;
+  packBackgrounds: Record<string, PackBackgroundSettings>;
+  packTitleOverrides: Record<string, string>;
 };

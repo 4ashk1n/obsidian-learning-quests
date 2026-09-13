@@ -29,17 +29,21 @@
       "x": -16,
       "y": 1173
     },
-    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-seq-timing": {
-      "x": 2391,
-      "y": 943
+    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-exceptions-extensions": {
+      "x": 2724,
+      "y": 1609
     },
-    "risc-v-ddca-spaced-map-quests:main-map-spaced-v2:v2-machine-code": {
-      "x": 1451,
-      "y": 1551
+    "machine-learning-systems-quests:main-map:pmpp5-scan-filter-prefix": {
+      "x": 8549,
+      "y": 8723
+    },
+    "machine-learning-systems-quests:main-map:pmpp5-conclusion-synthesis": {
+      "x": 13633,
+      "y": 8824
     }
   },
   "progress": {
-    "xp": 396,
+    "xp": 341,
     "completedQuests": [
       "v2-start-gate",
       "v2-plan-abstraction",
@@ -76,12 +80,7 @@
       "v2-hdl-comb",
       "v2-hdl-seq",
       "v2-hdl-fsm",
-      "v2-hdl-params-testbench",
-      "v2-blocks-gate",
-      "v2-arithmetic-blocks",
-      "v2-number-representation",
-      "v2-counters-shifters",
-      "v2-memory-arrays"
+      "v2-hdl-params-testbench"
     ],
     "completedTasks": {
       "v2-start-gate": [
@@ -242,29 +241,6 @@
       "v2-hdl-params-testbench": [
         "question",
         "read"
-      ],
-      "v2-blocks-gate": [
-        "open"
-      ],
-      "v2-arithmetic-blocks": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-number-representation": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-counters-shifters": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-memory-arrays": [
-        "read",
-        "question",
-        "note"
       ]
     },
     "skippedTasks": {
@@ -317,12 +293,7 @@
       ],
       "v2-hdl-params-testbench": [
         "note"
-      ],
-      "v2-blocks-gate": [],
-      "v2-arithmetic-blocks": [],
-      "v2-number-representation": [],
-      "v2-counters-shifters": [],
-      "v2-memory-arrays": []
+      ]
     },
     "rewardedTasks": {
       "v2-start-gate": [
@@ -483,35 +454,12 @@
       "v2-hdl-params-testbench": [
         "question",
         "read"
-      ],
-      "v2-blocks-gate": [
-        "open"
-      ],
-      "v2-arithmetic-blocks": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-number-representation": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-counters-shifters": [
-        "read",
-        "question",
-        "note"
-      ],
-      "v2-memory-arrays": [
-        "read",
-        "question",
-        "note"
       ]
     },
     "streak": {
-      "current": 2,
-      "best": 2,
-      "lastCompletionDate": "2026-08-09"
+      "current": 1,
+      "best": 1,
+      "lastCompletionDate": "2026-07-25"
     },
     "answers": {
       "v2-plan-abstraction:question": "b",
@@ -542,11 +490,7 @@
       "v2-hdl-comb:question": "a",
       "v2-hdl-seq:question": "a",
       "v2-hdl-fsm:question": "a",
-      "v2-hdl-params-testbench:question": "a",
-      "v2-arithmetic-blocks:question": "a",
-      "v2-number-representation:question": "a",
-      "v2-counters-shifters:question": "a",
-      "v2-memory-arrays:question": "a"
+      "v2-hdl-params-testbench:question": "a"
     },
     "selectedNotes": {
       "v2-logic-gates:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Логические элементы.md",
@@ -570,11 +514,7 @@
       "v2-fsm-design:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Конечные автоматы.md",
       "v2-seq-timing:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Временные характеристики.md",
       "v2-metastability:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Временные характеристики/Метастабильность.md",
-      "v2-parallelism-basics:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Параллелизм.md",
-      "v2-arithmetic-blocks:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Арифметические схемы/Арифметико-логическое устройство.md",
-      "v2-number-representation:note": "Компьютерные науки/Алгоритмы и алгоритмические языки/IEEE 754 - Числа с плавающей точкой.md",
-      "v2-counters-shifters:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Функциональные узлы/Сдвиговый регистр.md",
-      "v2-memory-arrays:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Последовательностные логические устройства/Запоминающие устройства/Запоминающие устройства.md"
+      "v2-parallelism-basics:note": "Естественные науки/Физика/Электроника/Цифровая электроника/Параллелизм.md"
     }
   }
 }
